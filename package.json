@@ -1,0 +1,35 @@
+{
+  "name": "dsh-feishu-notify",
+  "version": "0.0.1",
+  "description": "DSH plugin: Feishu (飞书) custom-bot notifications when an agent session settles (idle) or asks for input (ask_user_question)",
+  "private": true,
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx scripts/test-notify.ts && tsx scripts/smoke-test.ts",
+    "send-test": "tsx scripts/send-test.ts"
+  },
+  "dependencies": {
+    "schemastery": "^3.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "cordis": "^4.0.0-rc.7",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}
