@@ -1,6 +1,6 @@
 # dsh-feishu-notify
 
-DSH 插件：agent 会话结束时通过飞书自定义机器人发送通知卡片（移植自 pi-atlas 的飞书通知实现）。内测阶段，通过克隆源码 + 本地路径安装。
+DSH 插件：agent 会话结束时通过飞书自定义机器人发送通知卡片
 
 ## 作用
 
@@ -9,7 +9,11 @@ DSH 插件：agent 会话结束时通过飞书自定义机器人发送通知卡�
 | 会话结束（agent 进入 idle） | ✅「dsh 会话结束」 |
 | 模型调用 `ask_user_question` 等待输入 | 🔔「dsh 等待输入」 |
 
+<img width="1246" height="752" alt="image" src="https://github.com/user-attachments/assets/eaa2dda8-9e9d-431e-970c-3f0c18e59b98" />
+
 卡片含工作目录（末两段）与可选的「打开会话」按钮；subagent 会话不通知；webhook 发送失败只记日志，不影响 agent 主流程。
+
+> 注意，由于https://github.com/dsh-external/issues/issues/397 目前不支持使用sessionId + URL跳转，目前的打开会话按钮只会跳转到webui中
 
 ## 安装
 
