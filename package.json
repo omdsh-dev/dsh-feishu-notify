@@ -1,7 +1,7 @@
 {
   "name": "dsh-feishu-notify",
-  "version": "0.0.1",
-  "description": "DSH plugin: Feishu (飞书) custom-bot notifications when an agent session settles (idle) or asks for input (ask_user_question)",
+  "version": "0.1.0",
+  "description": "DSH plugin: Feishu (飞书) custom-bot notifications when an agent session settles (idle) or asks for input (ask_user_question). Adapted for DSH 0.1.0-rc.7 (@deepseek-ai/cordis line).",
   "private": true,
   "type": "module",
   "main": "lib/index.js",
@@ -24,11 +24,14 @@
     "send-test": "tsx scripts/send-test.ts"
   },
   "dependencies": {
-    "schemastery": "^3.18.0"
+    "@deepseek-ai/dsh-settings": "^0.0.1-rc.1",
+    "@deepseek-ai/schemastery": "^3.18.1"
   },
   "devDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-agent": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-session": "^0.0.1-rc.1",
     "@types/node": "^24.0.0",
-    "cordis": "^4.0.0-rc.7",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0"
   }

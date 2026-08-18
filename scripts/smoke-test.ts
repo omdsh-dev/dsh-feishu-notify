@@ -6,7 +6,7 @@
  *
  * Run: pnpm smoke  (tsx scripts/smoke-test.ts)
  */
-import { Context, Service } from 'cordis'
+import { Context, Service } from '@deepseek-ai/cordis'
 import { name, inject, apply } from '../src/index.js'
 import type { NotifyConfig } from '../src/notify.js'
 
@@ -67,12 +67,9 @@ await ctx.plugin({ name, inject, apply })
 // agent/status → idle  → sessionEnd card
 captured = null
 ctx.emit('agent/status', {
-  agent: {
-    sessionId: 'smoke-main',
-    session: { header: { cwd: '/root/Code/dsh-feishu-notify' } },
-  },
+  agent: { id: 'smoke-main', session: { header: { cwd: '/root/Code/dsh-feishu-notify' } } },
   status: 'idle',
-})
+} as any)
 await new Promise((r) => setTimeout(r, 20))
 assert(captured !== null, 'idle event → fetch called')
 assert(captured!.payload.msg_type === 'interactive', 'payload is an interactive card')
@@ -85,9 +82,9 @@ assert(
 // agent/status → running → no notification
 captured = null
 ctx.emit('agent/status', {
-  agent: { sessionId: 'smoke-main', session: { header: { cwd: '/root/Code/x' } } },
+  agent: { id: 'smoke-main', session: { header: { cwd: '/root/Code/x' } } },
   status: 'running',
-})
+} as any)
 await new Promise((r) => setTimeout(r, 20))
 assert(captured === null, 'running event → no fetch')
 
@@ -96,10 +93,10 @@ captured = null
 ctx.emit('session/event', {
   id: 'smoke-main',
   header: { cwd: '/root/Code/dsh-feishu-notify' },
-}, {
+} as any, {
   type: 'tool/call',
   data: { name: 'ask_user_question' },
-})
+} as any)
 await new Promise((r) => setTimeout(r, 20))
 assert(captured !== null, 'ask_user_question call → fetch called')
 assert(captured!.payload.card.header.template === 'orange', 'askUser card sent')
@@ -107,19 +104,19 @@ assert(/等待输入/.test(captured!.payload.card.header.title.content), 'askUse
 
 // session/event → other tool call → no notification
 captured = null
-ctx.emit('session/event', { id: 'smoke-main', header: {} }, { type: 'tool/call', data: { name: 'bash' } })
+ctx.emit('session/event', { id: 'smoke-main', header: {} } as any, {
+  type: 'tool/call',
+  data: { name: 'bash' },
+} as any)
 await new Promise((r) => setTimeout(r, 20))
 assert(captured === null, 'other tool call → no fetch')
 
 // subagent idle → suppressed
 captured = null
 ctx.emit('agent/status', {
-  agent: {
-    sessionId: 'smoke-child',
-    session: { header: { cwd: '/root/Code/sub', origin: 'subagent' } },
-  },
+  agent: { id: 'smoke-child', session: { header: { cwd: '/root/Code/sub', origin: 'subagent' } } },
   status: 'idle',
-})
+} as any)
 await new Promise((r) => setTimeout(r, 20))
 assert(captured === null, 'subagent idle → no fetch')
 

@@ -1,6 +1,6 @@
 # dsh-feishu-notify
 
-DSH 插件：agent 会话结束时通过飞书自定义机器人发送通知卡片
+DSH 插件：agent 会话结束时通过飞书自定义机器人发送通知卡片。已适配 DSH **0.1.0-rc.7**（`@deepseek-ai/cordis` / `@deepseek-ai/schemastery` 发行线）。
 
 ## 作用
 
@@ -13,15 +13,15 @@ DSH 插件：agent 会话结束时通过飞书自定义机器人发送通知卡�
 
 卡片含工作目录（末两段）与可选的「打开会话」按钮；subagent 会话不通知；webhook 发送失败只记日志，不影响 agent 主流程。
 
-> 注意，由于https://github.com/dsh-external/issues/issues/397 目前不支持使用sessionId + URL跳转，目前的打开会话按钮只会跳转到webui中
+> 注意：由于 dsh-external/issues#397 目前不支持使用 sessionId + URL 跳转，现在的「打开会话」按钮只会跳转到 webui 中。
 
 ## 安装
 
-前置：git、pnpm、运行中的 DSH。仓库 `dsh-external/dsh-feishu-notify` 为私有，需访问权限。
+前置：git、pnpm、运行中的 DSH（≥ 0.1.0-rc.7）。
 
 ```bash
 # 1. 克隆并构建
-git clone https://github.com/dsh-external/dsh-feishu-notify.git
+git clone https://github.com/omdsh-dev/dsh-feishu-notify.git
 cd dsh-feishu-notify
 pnpm install && pnpm build
 
@@ -53,6 +53,8 @@ feishu-notify:
 - YAML 留空请写 `""`；不写该行则回落默认值（secret 空、webUrl 为 `http://127.0.0.1:3080`）。
 - settings.yaml 热重载，之后改配置无需重启。
 
+配置优先级（与 rc.7 首方插件一致）：schema 默认值 → `cordis.patch.yml` 行内 `config:`（若配）→ `settings.yaml` 的 `feishu-notify:` 段。每次通知都会重读，改完即时生效。
+
 ## 验证
 
 - 发一条消息，模型回复完成后飞书收到「会话结束」卡；模型调用 `ask_user_question` 时收到「等待输入」卡；subagent 结束不通知。
@@ -63,3 +65,10 @@ feishu-notify:
 
 - 更新：源码目录 `git pull && pnpm build`，重新 `dsh plugin --profile <profile> add <路径>`，重启 DSH。
 - 卸载：删除 cordis.patch.yml 中的两行 → 重启 → profile 目录 `pnpm remove dsh-feishu-notify`。
+
+## 与 DSH 0.1.0-rc.7 的适配说明
+
+- 依赖迁移到 DSH 发行线使用的 fork：`@deepseek-ai/cordis`、`@deepseek-ai/schemastery`（替代上游 `cordis` / `schemastery`）。
+- 事件负载改为直接使用已发布的 `@deepseek-ai/dsh-agent` / `@deepseek-ai/dsh-session` 类型，删除手写的结构类型。
+- 修复：`agent/status` 的 subject 是 `Agent`，会话 id 字段为 `agent.id`（旧代码读 `agent.sessionId` 会得到 `undefined`，导致卡片链接失效）。
+- settings 注册改用 `@deepseek-ai/dsh-settings` 的 `settingsNamespace` + `register`，并导出 `Config` schema 作为 `feishu-notify:` 配置段形状（rc.7 插件约定）。

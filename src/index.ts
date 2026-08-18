@@ -8,8 +8,20 @@
  *   2. `session/event` → `tool/call` of `ask_user_question` — the model is
  *      waiting for human input (the DSH counterpart of pi-atlas's AskUser).
  *
+ * Adapted for DSH 0.1.0-rc.7 (the current @deepseek-ai package line):
+ *   - built on the published forks `@deepseek-ai/cordis` /
+ *     `@deepseek-ai/schemastery` that DSH ships, instead of upstream cordis;
+ *   - event payloads typed from the real published `@deepseek-ai/dsh-agent`
+ *     and `@deepseek-ai/dsh-session` packages (note: the `agent/status`
+ *     subject is `Agent`, whose session id field is `agent.id` — the old
+ *     hand-rolled `sessionId` shape produced `undefined` card links);
+ *   - settings namespace registered through `@deepseek-ai/dsh-settings`
+ *     (`settingsNamespace` + the branded `register` signature), with the
+ *     rc.7 convention of an exported `Config` schema doubling as the
+ *     `feishu-notify:` user-settings section shape.
+ *
  * Config lives in the `feishu-notify:` settings namespace
- * (`$DSH_HOME/settings.yaml`, hot-reloaded by dsh-settings-local) and is
+ * (`$DSH_HOME/settings.yaml`, hot-reloaded by dsh-settings-file) and is
  * re-read on every notification:
  *
  * ```yaml
@@ -28,33 +40,42 @@
  * Loader's `unwrapExports` would discard `name`/`inject` behind a default.
  */
 
-import z from 'schemastery'
-import type { Context } from 'cordis'
+import z from '@deepseek-ai/schemastery'
+import type { Context } from '@deepseek-ai/cordis'
+import type { Agent, AgentStatus } from '@deepseek-ai/dsh-agent'
+import type { Session, SessionEvent } from '@deepseek-ai/dsh-session'
+import { settingsNamespace } from '@deepseek-ai/dsh-settings'
 
-import './types.js'
 import { notify, type NotifyConfig } from './notify.js'
 
 export const name = 'feishu-notify'
 
 export const inject = ['settings']
 
-/** Settings schema for the `feishu-notify:` namespace (defaults → base → user layer). */
-const NotifySchema: z<NotifyConfig> = z.object({
+const NS = settingsNamespace('feishu-notify')
+
+/**
+ * Plugin config, validated by the same-named schemastery schema and doubling
+ * as the `feishu-notify` settings-section shape: schema defaults → the
+ * plugin's composition entry config (`base`) → the user settings.yaml
+ * section. Re-read on every notification, so edits hot-apply without a
+ * restart.
+ */
+export const Config: z<NotifyConfig> = z.object({
   enabled: z.boolean().default(true),
   webhookUrl: z.string().default(''),
   webhookSecret: z.string().role('secret').default(''),
   webUrl: z.string().default('http://127.0.0.1:3080'),
 })
 
-export function apply(ctx: Context): void {
-  const scope = ctx.settings.register<NotifyConfig>('feishu-notify', NotifySchema)
+export function apply(ctx: Context, entry: NotifyConfig): void {
+  const scope = ctx.settings.register<NotifyConfig>(NS, Config, { base: entry })
 
   // Session end: the agent went idle. Subagents are excluded inside notify().
-  ctx.on('agent/status', (payload) => {
-    if (payload.status !== 'idle') return
-    const agent = payload.agent
+  ctx.on('agent/status', ({ agent, status }: { agent: Agent; status: AgentStatus }) => {
+    if (status !== 'idle') return
     void notify(scope.get(), 'sessionEnd', {
-      sessionId: agent.sessionId,
+      sessionId: agent.id,
       cwd: agent.session.header.cwd,
       origin: agent.session.header.origin,
       delegationDepth: agent.session.header.delegationDepth,
@@ -63,7 +84,7 @@ export function apply(ctx: Context): void {
 
   // Waiting for input: the model called ask_user_question (blocks the turn
   // until a human answers, so it never overlaps the idle notification).
-  ctx.on('session/event', (session, event) => {
+  ctx.on('session/event', (session: Session, event: SessionEvent) => {
     if (event.type !== 'tool/call' || event.data.name !== 'ask_user_question') return
     void notify(scope.get(), 'askUser', {
       sessionId: session.id,
