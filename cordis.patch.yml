@@ -1,0 +1,6 @@
+# Bundle layer for dsh-feishu-notify: insert the plugin row so
+# `dsh plugin --profile <name> add <this package>` activates the plugin
+# automatically (see docs/user/develop/basic/publish.md).
+- insert:
+    - id: feishu-notify
+      name: dsh-feishu-notify

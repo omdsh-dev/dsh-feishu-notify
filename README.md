@@ -26,8 +26,9 @@ DSH 插件：agent 会话结束时通过飞书自定义机器人发送通知卡�
 dsh plugin --profile <profile> add git+https://github.com/omdsh-dev/dsh-feishu-notify.git
 ```
 
+- 包声明了 `dsh.bundle`（`cordis.patch.yml` 插入 `feishu-notify` 插件行），`dsh plugin add` 会自动挂载到 profile 的 bundle 层，**无需手改 cordis.patch.yml**。
 - 编译产物 `lib/` 已提交到仓库，git 安装无需构建（pnpm 的 allowBuilds 策略会拦截 prepare 脚本）。
-- 更新：`dsh plugin --profile <profile> update dsh-feishu-notify` 或删掉依赖重新 add。
+- 更新：`dsh plugin --profile <profile> update dsh-feishu-notify`。
 
 ### 方式 B：本地克隆构建后安装
 
@@ -38,17 +39,9 @@ pnpm install && pnpm build
 dsh plugin --profile <profile> add <路径>/dsh-feishu-notify
 ```
 
-### 挂载 + 配置（两种方式相同）
+### 配置（两种方式相同）
 
-```bash
-# 1. 挂载：在 ~/.dsh/profiles/<profile>/cordis.patch.yml 末尾追加两行
-#      - id: feishu-notify
-#        name: 'dsh-feishu-notify'
-
-# 2. 配置：在 ~/.dsh/settings.yaml 末尾追加 feishu-notify: 段（字段说明见下）
-
-# 3. 重启 DSH 进程
-```
+在 `~/.dsh/settings.yaml` 末尾追加 `feishu-notify:` 段（字段说明见下），然后重启 DSH 进程。
 
 ### 配置（~/.dsh/settings.yaml）
 
